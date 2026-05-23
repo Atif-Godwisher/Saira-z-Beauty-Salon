@@ -1,1 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saira'z Beauty Space</title>
 
+<link rel="stylesheet" href="style.css">
+
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- D3 -->
+<script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+
+<body>
+
+<!-- ================= SERVICES SECTION ================= -->
+<section id="services"></section>
+
+<!-- ================= GALLERY ================= -->
+<section id="gallery"></section>
+
+<!-- ================= VIDEO ================= -->
+<section id="video-section">
+<iframe id="reels-iframe" width="100%" height="400"></iframe>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section id="contact"></section>
+
+<!-- ================= MODALS ================= -->
+<div id="inquiry-success-modal" class="modal">
+  <div class="modal-box">
+    <h2>Inquiry Submitted</h2>
+    <p>Thanks <span id="modal-user-name"></span></p>
+    <p>Email: <span id="modal-user-email"></span></p>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<!-- JS -->
+<script src="script.js"></script>
+
+</body>
+</html>
