@@ -1,219 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Saira'z Beauty Space</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saira'z Beauty Space</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://d3js.org/d3.v7.min.js"></script>
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-<style>
-.hidden{display:none;}
-.modal-overlay{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,0.55);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:1000;
-}
-.modal-overlay.active{display:flex;}
-.modal-content{
-  background:white;
-  padding:20px;
-  border-radius:14px;
-  width:90%;
-  max-width:420px;
-}
-.reveal{opacity:0; transform:translateY(20px); transition:0.6s;}
-.revealed{opacity:1; transform:translateY(0);}
-</style>
+  <!-- D3.js -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+
+  <style>
+    /* minimal helpers for modal */
+    .modal-overlay{
+      position:fixed; inset:0; background:rgba(0,0,0,0.6);
+      display:none; align-items:center; justify-content:center;
+      z-index:9999;
+    }
+    .modal-overlay.active{ display:flex; }
+    .modal-content{
+      background:white; padding:24px; border-radius:16px;
+      max-width:420px; width:90%;
+    }
+  </style>
 </head>
 
-<body class="bg-gray-50">
+<body class="bg-pink-50 text-gray-800">
 
-<!-- ================= MODALS ================= -->
+<!-- ===================== FACIAL + MAKEUP PACKAGES ===================== -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+
+  <div class="bg-white rounded-2xl p-6 shadow-md">
+    <h3 class="text-xl font-bold text-center mb-6">Facial Packages</h3>
+
+    <div class="flex flex-col gap-6">
+
+      <div><div class="flex justify-between"><b>Package 1</b><b>PKR 1,300</b></div><p>Whitening Bleach</p></div>
+      <div><div class="flex justify-between"><b>Package 2</b><b>PKR 1,500</b></div><p>Normal Facial</p></div>
+      <div><div class="flex justify-between"><b>Package 3</b><b>PKR 1,650</b></div><p>Acne Care</p></div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ===================== GALLERY ===================== -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
+
+  <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df" class="rounded-xl"/>
+  <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f" class="rounded-xl"/>
+  <img src="https://images.unsplash.com/photo-1512290923902-8a9f81dc236c" class="rounded-xl"/>
+
+</div>
+
+<!-- ===================== VIDEO SECTION ===================== -->
+<div class="mt-10 p-6 bg-white rounded-2xl shadow">
+
+  <iframe id="reels-iframe"
+    src="https://www.instagram.com/reel/DXZaL14jKWV/embed/"
+    class="w-full h-[400px] rounded-xl"></iframe>
+
+</div>
+
+<!-- ===================== CONTACT + FORM ===================== -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mt-10">
+
+  <!-- CONTACT -->
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <h2 class="text-xl font-bold mb-4">Contact</h2>
+    <p>Karachi, Soldier Bazar</p>
+    <p>WhatsApp: 0331-2416792</p>
+  </div>
+
+  <!-- FORM -->
+  <div class="bg-white p-6 rounded-2xl shadow">
+    <form onsubmit="handleInquiry(event)">
+      <input id="inq-name" placeholder="Name" class="border p-2 w-full mb-2"/>
+      <input id="inq-email" placeholder="Email" class="border p-2 w-full mb-2"/>
+      <textarea id="inq-msg" placeholder="Message" class="border p-2 w-full mb-2"></textarea>
+      <button class="bg-black text-white px-4 py-2 w-full">Send</button>
+    </form>
+  </div>
+
+</div>
+
+<!-- ===================== MODALS ===================== -->
 <div id="inquiry-success-modal" class="modal-overlay">
   <div class="modal-content">
-    <h3 class="text-lg font-bold mb-2">Inquiry Submitted!</h3>
-    <p class="text-sm">
-      Thanks <strong id="modal-user-name"></strong><br/>
-      Contact: <strong id="modal-user-email"></strong>
-    </p>
-    <button class="mt-4 bg-black text-white px-4 py-2 rounded"
-      onclick="closeModal('inquiry-success-modal')">Close</button>
+    <h3 class="font-bold text-lg">Inquiry Submitted</h3>
+    <p class="text-sm mt-2">Thanks <b id="modal-user-name"></b>, we will contact you at <b id="modal-user-email"></b></p>
+    <button onclick="closeModal('inquiry-success-modal')" class="mt-4 bg-black text-white w-full py-2">Close</button>
   </div>
 </div>
 
 <div id="booking-success-modal" class="modal-overlay">
   <div class="modal-content">
-    <h3 class="text-lg font-bold mb-2">Booking Sent!</h3>
-    <p class="text-sm">Redirecting to WhatsApp...</p>
-    <button class="mt-4 bg-black text-white px-4 py-2 rounded"
-      onclick="closeModal('booking-success-modal')">Close</button>
+    <h3 class="font-bold">Booking Sent</h3>
+    <button onclick="closeModal('booking-success-modal')" class="mt-4 bg-black text-white w-full py-2">Close</button>
   </div>
 </div>
 
-<!-- ================= SERVICES ================= -->
-<div id="services-grid" class="p-6 grid gap-4"></div>
+<!-- ===================== D3 CHART ===================== -->
+<div class="mt-10 bg-white p-6 rounded-2xl">
+  <h2 class="font-bold mb-4">Duration Guide</h2>
+  <svg id="duration-svg-canvas" class="w-full h-[400px]"></svg>
+</div>
 
-<!-- ================= BOOKING FORM ================= -->
-<form onsubmit="handleBooking(event)" class="p-6 bg-white m-6 rounded-xl shadow">
-  <input id="form-name" placeholder="Name" class="border p-2 w-full mb-2" required />
-  <input id="form-phone" placeholder="Phone" class="border p-2 w-full mb-2" required />
-
-  <select id="form-service" class="border p-2 w-full mb-2">
-    <option value="">Select Service</option>
-  </select>
-
-  <input id="form-date" type="date" class="border p-2 w-full mb-2" required />
-  <input id="form-time" type="time" class="border p-2 w-full mb-2" required />
-
-  <textarea id="form-notes" placeholder="Notes" class="border p-2 w-full mb-2"></textarea>
-
-  <button class="bg-black text-white px-4 py-2 w-full rounded">
-    Book Appointment
-  </button>
-</form>
-
-<!-- ================= INQUIRY FORM ================= -->
-<form onsubmit="handleInquiry(event)" class="p-6 bg-white m-6 rounded-xl shadow">
-  <input id="inq-name" placeholder="Name" class="border p-2 w-full mb-2" required />
-  <input id="inq-email" placeholder="Email" class="border p-2 w-full mb-2" required />
-  <textarea id="inq-msg" placeholder="Message" class="border p-2 w-full mb-2"></textarea>
-
-  <button class="bg-gray-800 text-white px-4 py-2 w-full rounded">
-    Send Inquiry
-  </button>
-</form>
-
-<!-- ================= D3 CHART ================= -->
-<svg id="duration-svg-canvas" class="w-full h-[350px] bg-white m-6 rounded-xl"></svg>
-
+<!-- ===================== SCRIPT ===================== -->
 <script>
 
-// ================= DATA =================
+/* ---------------- SERVICES ---------------- */
 const SERVICES = {
 Facials: [
-{name:"Hydra Facial", desc:"Deep pore cleansing", price:"PKR 4500"},
-{name:"Gold Facial", desc:"Luxury glow", price:"PKR 3500"}
+{ name:'Hydra Facial', desc:'Deep skin care', price:'PKR 4500' }
 ],
-Hair: [
-{name:"Keratin Treatment", desc:"Smooth hair", price:"PKR 8000"}
-],
-Makeup: [
-{name:"Bridal Makeup", desc:"Full glam", price:"PKR 25000"}
-]
+Hair: [],
+Makeup: [],
+'Skin Care': [],
+Nails: []
 };
 
+/* ---------------- LANDMARKS ---------------- */
 const LANDMARKS = {
 soldier_bazar:{
-distance:"350m", car:"1 min", walk:"3 min",
-directions:"Head straight to G3 Dulara Avenue."
+name:'Soldier Bazar',
+distance:'350m',
+car:'1 min',
+walk:'3 min',
+directions:'Straight road'
 }
 };
 
-const VIDEOS = {
-requested_instagram:{
-type:"iframe",
-url:"https://www.instagram.com/reel/DXZaL14jKWV/embed/"
-}
-};
-
+/* ---------------- D3 DATA ---------------- */
 const DURATION_MATRIX = [
-{category:"Bridal Makeup", duration:180, icon:"👑", intensity:"High", tip:"Full bridal setup"},
-{category:"Hydra Facial", duration:90, icon:"🌸", intensity:"Medium", tip:"Deep cleansing"}
+{category:"Bridal Makeup", duration:180, icon:"👑", intensity:"Deluxe", tip:"Full bridal setup"},
+{category:"Facial", duration:90, icon:"🌸", intensity:"Care", tip:"Skin treatment"}
 ];
 
-// ================= STATE =================
-let currentCategory = "Facials";
-let bookingMessage = "";
+let d3SelectedItem = DURATION_MATRIX[0];
 
-// ================= SERVICES =================
-function renderServices(){
-const parent = document.getElementById("services-grid");
-if(!parent) return;
-
-parent.innerHTML = "";
-
-(SERVICES[currentCategory] || []).forEach(item=>{
-const div = document.createElement("div");
-div.className="p-4 bg-white rounded shadow";
-div.innerHTML = `
-<h3 class="font-bold">${item.name}</h3>
-<p>${item.desc}</p>
-<b>${item.price}</b>
-`;
-parent.appendChild(div);
-});
-}
-
-// ================= BOOKING =================
-function handleBooking(e){
-e.preventDefault();
-
-const name=document.getElementById("form-name").value;
-const phone=document.getElementById("form-phone").value;
-const service=document.getElementById("form-service").value;
-const date=document.getElementById("form-date").value;
-const time=document.getElementById("form-time").value;
-const notes=document.getElementById("form-notes").value;
-
-bookingMessage =
-`Name: ${name}
-Phone: ${phone}
-Service: ${service}
-Date: ${date}
-Time: ${time}
-Notes: ${notes}`;
-
-document.getElementById("modal-user-name").textContent=name;
-document.getElementById("modal-user-email").textContent=phone;
-
-document.getElementById("booking-success-modal").classList.add("active");
-
-window.open(
-"https://wa.me/923312416792?text="+encodeURIComponent(bookingMessage),
-"_blank"
-);
-}
-
-// ================= INQUIRY =================
+/* ---------------- INQUIRY ---------------- */
 function handleInquiry(e){
 e.preventDefault();
 
-const name=document.getElementById("inq-name").value;
-const email=document.getElementById("inq-email").value;
+document.getElementById("modal-user-name").innerText =
+document.getElementById("inq-name").value;
 
-document.getElementById("modal-user-name").textContent=name;
-document.getElementById("modal-user-email").textContent=email;
+document.getElementById("modal-user-email").innerText =
+document.getElementById("inq-email").value;
 
 document.getElementById("inquiry-success-modal").classList.add("active");
-
-document.getElementById("inq-name").value="";
-document.getElementById("inq-email").value="";
-document.getElementById("inq-msg").value="";
 }
 
-// ================= MODAL =================
+/* ---------------- MODAL ---------------- */
 function closeModal(id){
-document.getElementById(id)?.classList.remove("active");
+document.getElementById(id).classList.remove("active");
 }
 
-// ================= D3 =================
+/* ---------------- D3 ---------------- */
 function drawD3Chart(){
-const svg=d3.select("#duration-svg-canvas");
+
+const svg = d3.select("#duration-svg-canvas");
 svg.selectAll("*").remove();
 
-const width=600,height=300;
+const width = 600;
+const height = 300;
 
-const x=d3.scaleLinear().domain([0,200]).range([0,width]);
-const y=d3.scaleBand()
+const g = svg.append("g").attr("transform","translate(100,20)");
+
+const y = d3.scaleBand()
 .domain(DURATION_MATRIX.map(d=>d.category))
-.range([0,height]).padding(0.3);
+.range([0,height])
+.padding(0.2);
 
-const g=svg.append("g");
+const x = d3.scaleLinear()
+.domain([0,200])
+.range([0,width]);
 
 g.selectAll("rect")
 .data(DURATION_MATRIX)
@@ -222,20 +185,15 @@ g.selectAll("rect")
 .attr("y",d=>y(d.category))
 .attr("width",d=>x(d.duration))
 .attr("height",y.bandwidth())
-.attr("fill","steelblue");
+.attr("fill","pink");
 
-g.selectAll("text")
-.data(DURATION_MATRIX)
-.enter()
-.append("text")
-.attr("x",d=>x(d.duration)+5)
-.attr("y",d=>y(d.category)+20)
-.text(d=>d.duration+" min");
+g.append("g").call(d3.axisLeft(y));
+g.append("g").attr("transform",`translate(0,${height})`).call(d3.axisBottom(x));
+
 }
 
-// ================= INIT =================
+/* INIT */
 document.addEventListener("DOMContentLoaded",()=>{
-renderServices();
 drawD3Chart();
 });
 
