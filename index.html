@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Saira'z Beauty Space</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+.hidden{display:none;}
+.modal-overlay{
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.55);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+.modal-overlay.active{display:flex;}
+.modal-content{
+  background:white;
+  padding:20px;
+  border-radius:14px;
+  width:90%;
+  max-width:420px;
+}
+.reveal{opacity:0; transform:translateY(20px); transition:0.6s;}
+.revealed{opacity:1; transform:translateY(0);}
+</style>
+</head>
+
+<body class="bg-gray-50">
+
+<!-- ================= MODALS ================= -->
+<div id="inquiry-success-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3 class="text-lg font-bold mb-2">Inquiry Submitted!</h3>
+    <p class="text-sm">
+      Thanks <strong id="modal-user-name"></strong><br/>
+      Contact: <strong id="modal-user-email"></strong>
+    </p>
+    <button class="mt-4 bg-black text-white px-4 py-2 rounded"
+      onclick="closeModal('inquiry-success-modal')">Close</button>
+  </div>
+</div>
+
+<div id="booking-success-modal" class="modal-overlay">
+  <div class="modal-content">
+    <h3 class="text-lg font-bold mb-2">Booking Sent!</h3>
+    <p class="text-sm">Redirecting to WhatsApp...</p>
+    <button class="mt-4 bg-black text-white px-4 py-2 rounded"
+      onclick="closeModal('booking-success-modal')">Close</button>
+  </div>
+</div>
+
+<!-- ================= SERVICES ================= -->
+<div id="services-grid" class="p-6 grid gap-4"></div>
+
+<!-- ================= BOOKING FORM ================= -->
+<form onsubmit="handleBooking(event)" class="p-6 bg-white m-6 rounded-xl shadow">
+  <input id="form-name" placeholder="Name" class="border p-2 w-full mb-2" required />
+  <input id="form-phone" placeholder="Phone" class="border p-2 w-full mb-2" required />
+
+  <select id="form-service" class="border p-2 w-full mb-2">
+    <option value="">Select Service</option>
+  </select>
+
+  <input id="form-date" type="date" class="border p-2 w-full mb-2" required />
+  <input id="form-time" type="time" class="border p-2 w-full mb-2" required />
+
+  <textarea id="form-notes" placeholder="Notes" class="border p-2 w-full mb-2"></textarea>
+
+  <button class="bg-black text-white px-4 py-2 w-full rounded">
+    Book Appointment
+  </button>
+</form>
+
+<!-- ================= INQUIRY FORM ================= -->
+<form onsubmit="handleInquiry(event)" class="p-6 bg-white m-6 rounded-xl shadow">
+  <input id="inq-name" placeholder="Name" class="border p-2 w-full mb-2" required />
+  <input id="inq-email" placeholder="Email" class="border p-2 w-full mb-2" required />
+  <textarea id="inq-msg" placeholder="Message" class="border p-2 w-full mb-2"></textarea>
+
+  <button class="bg-gray-800 text-white px-4 py-2 w-full rounded">
+    Send Inquiry
+  </button>
+</form>
+
+<!-- ================= D3 CHART ================= -->
+<svg id="duration-svg-canvas" class="w-full h-[350px] bg-white m-6 rounded-xl"></svg>
+
+<script>
+
+// ================= DATA =================
+const SERVICES = {
+Facials: [
+{name:"Hydra Facial", desc:"Deep pore cleansing", price:"PKR 4500"},
+{name:"Gold Facial", desc:"Luxury glow", price:"PKR 3500"}
+],
+Hair: [
+{name:"Keratin Treatment", desc:"Smooth hair", price:"PKR 8000"}
+],
+Makeup: [
+{name:"Bridal Makeup", desc:"Full glam", price:"PKR 25000"}
+]
+};
+
+const LANDMARKS = {
+soldier_bazar:{
+distance:"350m", car:"1 min", walk:"3 min",
+directions:"Head straight to G3 Dulara Avenue."
+}
+};
+
+const VIDEOS = {
+requested_instagram:{
+type:"iframe",
+url:"https://www.instagram.com/reel/DXZaL14jKWV/embed/"
+}
+};
+
+const DURATION_MATRIX = [
+{category:"Bridal Makeup", duration:180, icon:"👑", intensity:"High", tip:"Full bridal setup"},
+{category:"Hydra Facial", duration:90, icon:"🌸", intensity:"Medium", tip:"Deep cleansing"}
+];
+
+// ================= STATE =================
+let currentCategory = "Facials";
+let bookingMessage = "";
+
+// ================= SERVICES =================
+function renderServices(){
+const parent = document.getElementById("services-grid");
+if(!parent) return;
+
+parent.innerHTML = "";
+
+(SERVICES[currentCategory] || []).forEach(item=>{
+const div = document.createElement("div");
+div.className="p-4 bg-white rounded shadow";
+div.innerHTML = `
+<h3 class="font-bold">${item.name}</h3>
+<p>${item.desc}</p>
+<b>${item.price}</b>
+`;
+parent.appendChild(div);
+});
+}
+
+// ================= BOOKING =================
+function handleBooking(e){
+e.preventDefault();
+
+const name=document.getElementById("form-name").value;
+const phone=document.getElementById("form-phone").value;
+const service=document.getElementById("form-service").value;
+const date=document.getElementById("form-date").value;
+const time=document.getElementById("form-time").value;
+const notes=document.getElementById("form-notes").value;
+
+bookingMessage =
+`Name: ${name}
+Phone: ${phone}
+Service: ${service}
+Date: ${date}
+Time: ${time}
+Notes: ${notes}`;
+
+document.getElementById("modal-user-name").textContent=name;
+document.getElementById("modal-user-email").textContent=phone;
+
+document.getElementById("booking-success-modal").classList.add("active");
+
+window.open(
+"https://wa.me/923312416792?text="+encodeURIComponent(bookingMessage),
+"_blank"
+);
+}
+
+// ================= INQUIRY =================
+function handleInquiry(e){
+e.preventDefault();
+
+const name=document.getElementById("inq-name").value;
+const email=document.getElementById("inq-email").value;
+
+document.getElementById("modal-user-name").textContent=name;
+document.getElementById("modal-user-email").textContent=email;
+
+document.getElementById("inquiry-success-modal").classList.add("active");
+
+document.getElementById("inq-name").value="";
+document.getElementById("inq-email").value="";
+document.getElementById("inq-msg").value="";
+}
+
+// ================= MODAL =================
+function closeModal(id){
+document.getElementById(id)?.classList.remove("active");
+}
+
+// ================= D3 =================
+function drawD3Chart(){
+const svg=d3.select("#duration-svg-canvas");
+svg.selectAll("*").remove();
+
+const width=600,height=300;
+
+const x=d3.scaleLinear().domain([0,200]).range([0,width]);
+const y=d3.scaleBand()
+.domain(DURATION_MATRIX.map(d=>d.category))
+.range([0,height]).padding(0.3);
+
+const g=svg.append("g");
+
+g.selectAll("rect")
+.data(DURATION_MATRIX)
+.enter()
+.append("rect")
+.attr("y",d=>y(d.category))
+.attr("width",d=>x(d.duration))
+.attr("height",y.bandwidth())
+.attr("fill","steelblue");
+
+g.selectAll("text")
+.data(DURATION_MATRIX)
+.enter()
+.append("text")
+.attr("x",d=>x(d.duration)+5)
+.attr("y",d=>y(d.category)+20)
+.text(d=>d.duration+" min");
+}
+
+// ================= INIT =================
+document.addEventListener("DOMContentLoaded",()=>{
+renderServices();
+drawD3Chart();
+});
+
+</script>
+
+</body>
+</html>
